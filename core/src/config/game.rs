@@ -2,14 +2,15 @@
 //! of Heroic's game settings that is about starting the game (extra
 //! arguments, another executable, a wrapper command, environment
 //! variables; legendary's `--override-exe`, `--wrapper`, `start_params` and
-//! env config) plus the password of a private GOG branch. A file exists
-//! only while something is set.
+//! env config) plus the password of a private GOG branch (kept in the vault,
+//! not in the file). A file exists only while something is set.
 
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
 use crate::paths;
+use crate::secrets::Vault;
 use crate::types::{LaunchSpec, Runner};
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -47,6 +48,14 @@ impl GameSettings {
     /// A file that does not parse is moved aside (`<name>.broken-<time>`)
     /// and reported, never silently overwritten by the next save.
     pub fn load(runner: Runner, app_name: &str) -> Self {
+        let mut s = Self::load_file(runner, app_name);
+        if runner == Runner::Gog {
+            s.load_password(app_name);
+        }
+        s
+    }
+
+    fn load_file(runner: Runner, app_name: &str) -> Self {
         let path = Self::path(runner, app_name);
         let Ok(raw) = std::fs::read_to_string(&path) else {
             return Self::default();
@@ -61,10 +70,22 @@ impl GameSettings {
         }
     }
 
-    /// Write the settings; a default (empty) set removes the file.
+    /// Write the settings; a default (empty) set removes the file. The GOG
+    /// branch password goes to the vault, never into the file.
     pub fn save(&self, runner: Runner, app_name: &str) -> crate::error::Result<()> {
+        let mut file = self.clone();
+        let password = std::mem::take(&mut file.gog_branch_password);
+        if runner == Runner::Gog {
+            let vault = Vault::new(paths::vault_dir());
+            let key = Self::password_key(app_name);
+            if password.is_empty() {
+                vault.delete(&key)?;
+            } else {
+                vault.store(&key, password.as_bytes())?;
+            }
+        }
         let path = Self::path(runner, app_name);
-        if *self == Self::default() {
+        if file == Self::default() {
             if path.exists() {
                 std::fs::remove_file(&path)?;
             }
@@ -72,9 +93,34 @@ impl GameSettings {
         }
         std::fs::create_dir_all(paths::game_configs_dir())?;
         let tmp = path.with_extension("tmp");
-        std::fs::write(&tmp, serde_json::to_string_pretty(self)?)?;
+        std::fs::write(&tmp, serde_json::to_string_pretty(&file)?)?;
         std::fs::rename(&tmp, &path)?;
         Ok(())
+    }
+
+    fn password_key(app_name: &str) -> String {
+        format!("gog-branch-{app_name}")
+    }
+
+    /// The vault's copy of the branch password; a password still in the file
+    /// (older versions) is moved into the vault.
+    fn load_password(&mut self, app_name: &str) {
+        if !self.gog_branch_password.is_empty() {
+            // zero the plaintext first: the rename in `save` only unlinks it
+            let _ = crate::secrets::wipe_file(&Self::path(Runner::Gog, app_name));
+            match self.save(Runner::Gog, app_name) {
+                Ok(()) => tracing::info!(app = app_name, "branch password moved into the vault"),
+                Err(e) => {
+                    tracing::warn!(app = app_name, error = %e, "could not move the branch password into the vault")
+                }
+            }
+            return;
+        }
+        match Vault::new(paths::vault_dir()).load(&Self::password_key(app_name)) {
+            Ok(Some(pw)) => self.gog_branch_password = String::from_utf8_lossy(&pw).into_owned(),
+            Ok(None) => {}
+            Err(e) => tracing::warn!(app = app_name, error = %e, "branch password unreadable"),
+        }
     }
 
     /// Executable, arguments and environment of a launch. `install_dir`

@@ -118,6 +118,8 @@ impl Legendary {
 
     /// See [`crate::stores::Stores::seal_leftovers`].
     pub fn seal_leftover(&self) -> Result<bool> {
+        // games read their ownership token only at start
+        epic::launch::remove_ownership_tokens(&paths::legendary_config_dir().join("tmp"));
         self.user.absorb_leftover()
     }
 

@@ -208,7 +208,7 @@ impl Vault {
         if !path.is_file() {
             return Ok(None);
         }
-        let raw = std::fs::read(&path)?;
+        let raw = Zeroizing::new(std::fs::read(&path)?);
         if raw.len() < MAGIC.len() + 1 || &raw[..MAGIC.len()] != MAGIC {
             return Err(Error::Secrets(format!(
                 "{} is not a vault file",
@@ -235,6 +235,9 @@ impl Vault {
                 )));
             }
             let plain = Zeroizing::new(raw[body_start..].to_vec());
+            // zero the plaintext blocks first: the rename in `store` would
+            // only unlink them
+            wipe_file(&path)?;
             self.store(key, &plain)?;
             tracing::info!(
                 key,

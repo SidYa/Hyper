@@ -554,9 +554,11 @@ fn open_log(runner: Runner, app_name: &str, kind: &str) -> Option<File> {
 /// Where Proton writes its verbose log (`PROTON_LOG`) during a launch:
 /// `logs/games/.proton-raw/<store>-<game>`, private to the user.
 fn raw_proton_log_dir(runner: Runner, app_name: &str) -> PathBuf {
-    paths::game_logs_dir()
-        .join(".proton-raw")
-        .join(format!("{}-{}", runner.id(), safe_name(app_name)))
+    paths::game_logs_dir().join(".proton-raw").join(format!(
+        "{}-{}",
+        runner.id(),
+        safe_name(app_name)
+    ))
 }
 
 fn create_private_dir(dir: &Path) -> std::io::Result<()> {
