@@ -1,0 +1,28 @@
+# Normalise line endings: LF in the repo, native on checkout
+* text=auto eol=lf
+
+# Windows-specific scripts keep CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.icns binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.mp3 binary
+*.ogg binary
+*.wav binary
+*.exe binary
+
+# Lockfiles: never merge by hand
+pnpm-lock.yaml -diff merge=binary
+Cargo.lock -diff merge=binary

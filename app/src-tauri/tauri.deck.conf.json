@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "build": {
+    "beforeDevCommand": "HYPER_EDITION=deck pnpm dev",
+    "beforeBuildCommand": "HYPER_EDITION=deck pnpm build"
+  },
+  "bundle": {
+    "targets": ["appimage"],
+    "linux": {
+      "appimage": {
+        "bundleMediaFramework": false
+      }
+    }
+  }
+}

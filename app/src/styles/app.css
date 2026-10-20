@@ -1,0 +1,244 @@
+/* Base theme. Colour tokens follow Heroic's "midnightMirage" palette so the
+   original themes.scss can be ported token-for-token later. */
+:root {
+  --body-background: #0f1120;
+  --background: #1a1c33;
+  --background-darker: #0d0f1c;
+  --background-lighter: #262a48;
+  --navbar-background: #12142a;
+  --current-background: #1d2040;
+  --accent: #6a4df6;
+  --accent-overlay: #8b73ff;
+  --accent-text: #ffffff;
+  --text-default: #eef0ff;
+  --text-secondary: #a6a9c8;
+  --text-tertiary: #7a7d9e;
+  --success: #2ecc71;
+  --danger: #ff5f5f;
+  --warning: #f6c344;
+  --primary: #6a4df6;
+  --primary-hover: #7d63ff;
+  --card-radius: 10px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --font-primary: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-secondary: 'Cabin', system-ui, sans-serif;
+  --sidebar-width: 220px;
+  /* set by App when the custom title bar is on */
+  --titlebar-height: 0px;
+  --transition: 160ms ease;
+  --shadow: rgba(0, 0, 0, 0.45);
+}
+
+/* Light palette. Accent variables are set at runtime by lib/theme.ts. */
+:root[data-theme='light'] {
+  --body-background: #f4f5fa;
+  --background: #ffffff;
+  --background-darker: #e9ebf3;
+  --background-lighter: #dfe2ee;
+  --navbar-background: #eceef6;
+  --current-background: #dde0f0;
+  --text-default: #171a2c;
+  --text-secondary: #4d5270;
+  --text-tertiary: #7a7f9c;
+  --success: #17914f;
+  --danger: #d23b3b;
+  --warning: #a87800;
+  --shadow: rgba(30, 34, 60, 0.18);
+}
+
+/* Animatable progress for the console tile colour fill */
+@property --p {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--body-background);
+  color: var(--text-default);
+  font-family: var(--font-primary);
+  font-size: 15px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  user-select: none;
+}
+
+#app {
+  height: 100%;
+}
+
+a {
+  color: var(--accent-overlay);
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent-overlay);
+  outline-offset: 2px;
+}
+
+/* While a controller drives the UI every focused element gets a strong ring,
+   even ones the browser would not mark as :focus-visible. */
+body.using-gamepad :focus {
+  outline: 3px solid var(--accent-overlay) !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent-overlay) 25%, transparent);
+}
+
+input,
+select {
+  font: inherit;
+  color: var(--text-default);
+  background: var(--background-darker);
+  border: 1px solid var(--background-lighter);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* The logo's look, for the wordmark tile and the Play button: a slow drift
+   through the accent's gradient (stops from lib/theme.ts, each readable
+   under --logo-text) and a thin ring just outside. */
+.accent-live {
+  background: linear-gradient(
+    110deg,
+    var(--logo-a, var(--accent)),
+    var(--logo-b, var(--accent)),
+    var(--logo-c, var(--accent)),
+    var(--logo-a, var(--accent))
+  );
+  background-size: 300% 100%;
+  animation: accent-drift 10s ease-in-out infinite alternate;
+  color: var(--logo-text, var(--accent-text));
+  outline: 1px solid color-mix(in srgb, var(--accent-overlay) 60%, transparent);
+  outline-offset: 2px;
+}
+@keyframes accent-drift {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .accent-live {
+    animation: none;
+  }
+}
+
+/* Round checkboxes: an outlined circle, filled with the accent and a tick
+   when checked. */
+input[type='checkbox'] {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--text-tertiary);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+}
+input[type='checkbox']:hover:not(:disabled) {
+  border-color: var(--accent-overlay);
+}
+input[type='checkbox']:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: 4px;
+  height: 8px;
+  border: solid var(--accent-text);
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+input[type='checkbox']:focus-visible {
+  outline: 2px solid var(--accent-overlay);
+  outline-offset: 2px;
+}
+input[type='checkbox']:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--background-lighter);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 8px;
+  background: var(--background-lighter);
+  color: var(--text-default);
+  transition: background var(--transition), transform var(--transition);
+}
+.btn:hover {
+  background: var(--current-background);
+}
+.btn:active {
+  transform: scale(0.98);
+}
+.btn.primary {
+  background: var(--primary);
+  color: var(--accent-text);
+}
+.btn.primary:hover {
+  background: var(--primary-hover);
+}
+
+.muted {
+  color: var(--text-secondary);
+}
+

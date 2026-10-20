@@ -1,0 +1,46 @@
+[package]
+name = "hyper-app"
+description = "Hyper — Tauri desktop application"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[lib]
+name = "hyper_app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+# The executable is `hyper.exe` in both `tauri dev` and the installed app
+# (matches `mainBinaryName` in tauri.conf.json).
+[[bin]]
+name = "hyper"
+path = "src/main.rs"
+
+[features]
+# Steam Deck edition: console mode only (see `DECK` in lib.rs)
+deck = []
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+hyper-core = { path = "../../core" }
+# `unstable` enables multiple webviews per window (the embedded Store tab)
+tauri = { version = "2", features = ["tray-icon", "protocol-asset", "unstable"] }
+tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-window-state = "2"
+tauri-plugin-single-instance = "2"
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+tracing-appender = "0.2"
+# native controller input (XInput) for the in-game "close game" chord
+gilrs = { version = "0.11", default-features = false, features = ["xinput"] }
+
+# Linux: the Store tab's webviews are laid out by hand (src/gtk_layout.rs);
+# the same gtk tauri already builds on
+[target.'cfg(target_os = "linux")'.dependencies]
+gtk = "=0.18.2"

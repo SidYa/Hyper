@@ -1,0 +1,35 @@
+{
+  "name": "hyper-app",
+  "version": "1.0.0",
+  "description": "Hyper — Tauri + Svelte frontend",
+  "private": true,
+  "type": "module",
+  "license": "GPL-3.0-only",
+  "packageManager": "pnpm@10.28.0+sha512.05df71d1421f21399e053fde567cea34d446fa02c76571441bfc1c7956e98e363088982d940465fd34480d4d90a0668bc12362f8aa88000a64e83d0b0e47be48",
+  "scripts": {
+    "dev": "vite",
+    "build": "node scripts/gen-licenses.mjs && vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "tauri": "tauri",
+    "app:dev": "tauri dev",
+    "app:build": "tauri build -- --locked && node scripts/collect-win.mjs",
+    "app:dev:deck": "tauri dev --features deck --config src-tauri/tauri.deck.conf.json",
+    "app:build:deck": "tauri build --features deck --config src-tauri/tauri.deck.conf.json -- --locked",
+    "licenses": "node scripts/gen-licenses.mjs"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "2.12.4",
+    "@tauri-apps/plugin-dialog": "2.8.3"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "@tauri-apps/cli": "2.12.3",
+    "@tsconfig/svelte": "5.0.8",
+    "@types/node": "26.6.5",
+    "svelte": "5.57.2",
+    "svelte-check": "4.7.6",
+    "typescript": "5.9.3",
+    "vite": "8.3.4"
+  }
+}

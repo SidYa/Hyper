@@ -1,0 +1,61 @@
+[package]
+name = "hyper-core"
+description = "Hyper core: settings, store managers, helper processes"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[lib]
+name = "hyper_core"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+async-trait.workspace = true
+tracing.workspace = true
+dirs.workspace = true
+chrono.workspace = true
+regex = "1"
+sysinfo = { version = "0.39", default-features = false, features = ["system"] }
+reqwest = { version = "0.13", features = ["json", "query", "form"] }
+# GOG v2 manifests are zlib-compressed (import restores them for gogdl);
+# Epic manifests too (stores/epic/manifest.rs), checked with SHA-1
+flate2 = "1"
+sha1 = "0.10"
+# GOG checks files and chunks with MD5 (stores/gog/native)
+md-5 = "0.10"
+# chunk ids, chunk folder numbers (stores/epic/chunk.rs)
+rand = "0.10"
+crc32fast = "1"
+# decrypted credentials are zeroed when dropped (secrets)
+zeroize = "1"
+# AES-256-GCM: the Linux vault (secrets/key_file.rs) and Epic's encrypted
+# manifests / chunks (stores/epic); already in the tree via rustls
+ring = "0.17"
+# Steam Linux Runtime (.tar.xz) and UMU-Proton (.tar.gz) archives (compat/umu);
+# pure Rust, so the Linux-only code type-checks on every host
+tar = "0.4"
+lzma-rust2 = { version = "0.23", default-features = false, features = ["std", "xz", "sha2"] }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62", features = [
+    "Win32_Foundation",
+    "Win32_Security_Cryptography",
+    # free disk space before an Epic download
+    "Win32_Storage_FileSystem",
+    # icon of a sideloaded game's executable
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_Graphics_Gdi",
+    # GOG setup scripts / redistributables run elevated (ShellExecuteEx runas)
+    "Win32_UI_Shell",
+    "Win32_System_Threading",
+] }
+png = "0.17"
+
+[target.'cfg(unix)'.dependencies]
+# statvfs: free disk space before a download (browse.rs)
+libc = "0.2"
