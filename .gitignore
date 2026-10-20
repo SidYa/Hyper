@@ -21,3 +21,7 @@ Thumbs.db
 
 # Local launcher (machine-specific)
 run.bat
+
+# AI instruments
+.claude
+CLAUDE.md
